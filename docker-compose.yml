@@ -1,6 +1,29 @@
-version: "3.9"
+#version: "3.9"
 
 services:
+  postgres:
+    image: postgres:15.7
+    container_name: postgres
+    restart: always
+    hostname: postgres
+    shm_size: 128mb
+    environment:
+      POSTGRES_DB: grafanadb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - 5433:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - gap
+    healthcheck:
+      test: "/usr/bin/pg_isready -U postgres"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   prometheus:
     image: prom/prometheus:v2.53.1
     container_name: prometheus
@@ -43,10 +66,18 @@ services:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
       - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_DATABASE_TYPE=postgres
+      - GF_DATABASE_HOST=postgres:5432
+      - GF_DATABASE_NAME=grafanadb
+      - GF_DATABASE_USER=postgres
+      - GF_DATABASE_PASSWORD=postgres
+      - GF_DATABASE_SSL_MODE=disable
     ports:
       - 3000:3000
     networks:
       - gap
+    depends_on:
+      - postgres
 
   node-exporter:
     image: prom/node-exporter:v1.8.2
@@ -66,6 +97,7 @@ services:
       - gap
 
 volumes:
+  postgres_data:
   prometheus_data:
   grafana_data:
 
