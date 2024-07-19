@@ -1,5 +1,6 @@
 # gap
 grafana alertmanager prometheus
+grafana будет использовать СУБД postgresql
 
 Запустить, находясь в папке с клонированным данным репозиторием:
 docker compose up -d
